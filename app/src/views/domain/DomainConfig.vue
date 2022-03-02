@@ -1,6 +1,6 @@
 <template>
   <view-base
-    :queries="queries" @queries-response="onQueriesResponse"
+    :queries="queries" @queries-response="onQueriesResponse" :loading="loading"
     ref="view" skeleton="card-form-skeleton"
   >
     <config-panels
@@ -35,6 +35,7 @@ export default {
       queries: [
         ['GET', `domains/${this.name}/config?full`]
       ],
+      loading: true,
       config: {}
     }
   },
@@ -42,6 +43,7 @@ export default {
   methods: {
     onQueriesResponse (config) {
       this.config = formatYunoHostConfigPanels(config)
+      this.loading = false
     },
 
     async onConfigSubmit ({ id, form, action, name }) {
@@ -59,7 +61,11 @@ export default {
         )
 
       call.then(() => {
-        this.$refs.view.fetchQueries({ triggerLoading: true })
+        this.loading = true
+        api.get(`domains/${this.name}/config/${id}?full`).then(config => {
+          this.config = formatYunoHostConfigPanels(config, this.config)
+          this.loading = false
+        })
       }).catch(err => {
         if (err.name !== 'APIBadRequestError') throw err
         const panel = this.config.panels.find(panel => panel.id === id)

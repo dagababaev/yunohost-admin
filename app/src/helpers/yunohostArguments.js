@@ -344,8 +344,8 @@ export function formatYunoHostArguments (args, forms) {
 }
 
 
-export function formatYunoHostConfigPanels (data) {
-  const result = {
+export function formatYunoHostConfigPanels (data, previousConfig = null) {
+  const result = previousConfig || {
     panels: [],
     forms: {},
     validations: {},
@@ -387,7 +387,12 @@ export function formatYunoHostConfigPanels (data) {
       panel.sections.push(section)
     }
 
-    result.panels.push(panel)
+    const previousPanel = result.panels.find(panel => panel.id === panelId)
+    if (previousPanel) {
+      result.panels.splice(result.panels.indexOf(previousPanel), 1, panel)
+    } else {
+      result.panels.push(panel)
+    }
   }
 
   return result
